@@ -7,10 +7,14 @@ Ascii art system for terminal, including colors and custom art depending on whet
 
 ## Creating Art
 Use chafa (install with brew) to create ascii art:
+```
 chafa -f symbols --symbols ascii -c 256 --fg-only -s 28x beastling.png  > beastling.txt
+```
 
 ### Chafa Flags
+```
 -s 60x sets width to 60
 --symbols has options ascii, block, and braille
 -c 256 is colored, -c none is not
 -f symbols makes it ascii art and not an image
+```
