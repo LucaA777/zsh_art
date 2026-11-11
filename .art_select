@@ -1,2 +1,2 @@
 script_dir=${${(%):-%x}:A:h}
-source "$script_dir/hades-nemesis-sword/.zsh_nemesis-sword"
+source "$script_dir/hornet/.zsh_hornet"
