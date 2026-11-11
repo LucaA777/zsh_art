@@ -1,1 +1,2 @@
-source ~/.config/zsh_ascii/bell-beasts/.zsh_bellbeasts
+script_dir=${${(%):-%x}:A:h}
+source "$script_dir/bell-beasts/.zsh_bellbeasts"

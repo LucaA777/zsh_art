@@ -1,3 +1,5 @@
+script_dir=${${(%):-%x}:A:h}
+
 # ~/.zsh_ascii_art — startup ASCII art for macOS Terminal + zsh
 # Load it from ~/.zshrc with:   source ~/.zsh_ascii_art
 #
@@ -6,8 +8,8 @@
 
 [[ -o interactive ]] || return   # never print art in scripts
 
-show_first_art()   { cat ~/.config/zsh_ascii/bell-beasts/bell-beast.txt }
-show_regular_art() { cat ~/.config/zsh_ascii/bell-beasts/beastling.txt }
+show_first_art()   { cat "$script_dir/bell-beast.txt" }
+show_regular_art() { cat "$script_dir/beastling.txt" }
 
 () {
   # Process name of the terminal app we're running in.
