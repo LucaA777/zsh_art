@@ -1,0 +1,64 @@
+# ~/.zsh_ascii_art — startup ASCII art for macOS Terminal + zsh
+# Load it from ~/.zshrc with:   source ~/.zsh_ascii_art
+#
+# "First" art  → this is the only Terminal window/tab open
+# "Regular" art → any other Terminal window/tab is already open
+
+[[ -o interactive ]] || return   # never print art in scripts
+
+show_first_art()   { cat ~/.config/zsh_ascii/bell-beasts/bell-beast.txt }
+show_regular_art() { cat ~/.config/zsh_ascii/bell-beasts/beastling.txt }
+
+() {
+  # Process name of the terminal app we're running in.
+  local app
+  case $TERM_PROGRAM in
+    Apple_Terminal) app=Terminal ;;
+    ghostty)        app=ghostty ;;
+    *) show_regular_art; return ;;   # VS Code, iTerm, tmux, ssh, ...
+  esac
+
+  # Every tab / window / split is its own child process of the app, e.g.
+  #   Terminal -> login -> zsh        ghostty -> login -> zsh
+  # Walk up from this shell until we reach the app. The process just below
+  # the app is this tab's "root". If we pass another zsh on the way up, this
+  # is a nested shell (you typed `zsh`), which never counts as first.
+  local pid=$$ parent comm app_pid tab_root nested=0 i
+  for i in {1..15}; do
+    parent=${$(command ps -o ppid= -p $pid 2>/dev/null)// /}
+    [[ -z $parent || $parent == 0 || $parent == 1 ]] && break
+    comm=$(command ps -o comm= -p $parent 2>/dev/null)
+    if [[ ${comm:t} == $app ]]; then
+      app_pid=$parent tab_root=$pid
+      break
+    fi
+    [[ ${comm:t} == (-|)zsh ]] && nested=1
+    pid=$parent
+  done
+
+  # All open tabs/windows/splits of this app (each starts as login or zsh).
+  # Read from `ps`, not `pgrep`: macOS pgrep silently skips its own parent
+  # processes, which would hide the very tab we're in.
+  local -a tabs
+  local line p pp c
+  if [[ -n $app_pid ]]; then
+    for line in ${(f)"$(command ps -ax -o pid=,ppid=,comm=)"}; do
+      read -r p pp c <<< "$line"
+      [[ $pp == $app_pid && ${c:t} == (login|-zsh|zsh) ]] && tabs+=($p)
+    done
+  fi
+
+  if [[ -n $ASCII_ART_DEBUG ]]; then
+    print -r -- "app=$app app_pid=$app_pid tab_root=$tab_root nested=$nested"
+    print -r -- "tabs (oldest first): ${(on)tabs}"
+  fi
+
+  # First = no still-open tab of this app was opened before this one.
+  # "Oldest wins" means that when the app restores several windows at
+  # launch, exactly one of them gets the first art.
+  if [[ -n $app_pid && $nested == 0 && $tab_root == ${${(on)tabs}[1]} ]]; then
+    show_first_art
+  else
+    show_regular_art
+  fi
+}
